@@ -1,0 +1,8 @@
+name: MessageBridge
+version: '${project.version}'
+main: space.nbtca.mc.MessageBridge
+api-version: '1.20'
+authors: [nbtca]
+description: NBTCA
+website: https://mc.nbtca.space
+
