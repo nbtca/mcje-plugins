@@ -1,7 +1,5 @@
 package space.nbtca.mc.Packet;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,21 +8,22 @@ import java.util.Optional;
 @Data
 public abstract class BasePacket {
     @Expose(serialize = false, deserialize = false)
-    private ServerInformation source;
+    private SenderInformation source;
     @Data
     @AllArgsConstructor
-    public static class ServerInformation {
-        public String serverName;
-        public String serverVersion;
-//        public String serverIp;
-//        public String serverPort;
+    public static class SenderInformation {
+        public String displayName;
+        public String name;
+        public String version;
     }
     private static JsonElement serverInfo;
-    public static void setServerInfo(ServerInformation serverInfo) {
+    public static void setServerInfo(SenderInformation serverInfo) {
         BasePacket.serverInfo = GSON.toJsonTree(serverInfo);
     }
     public abstract PacketType getType();
-    private static final Gson GSON = new Gson();
+    private static final Gson GSON = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
     public String toJson() {
         var data = GSON.toJsonTree(this);
         var jsonObject = new JsonObject();
@@ -45,7 +44,7 @@ public abstract class BasePacket {
         }
         var result = GSON.fromJson(data, typeOptional.get().getPacketClass());
         if (source != null) {
-            result.source = GSON.fromJson(source, ServerInformation.class);
+            result.source = GSON.fromJson(source, SenderInformation.class);
         }
         return Optional.of(result);
     }

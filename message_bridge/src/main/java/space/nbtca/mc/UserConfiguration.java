@@ -6,4 +6,5 @@ import lombok.Data;
 public class UserConfiguration {
     private String notificationCenterWsAddress = "ws://127.0.0.1/mc";
     private String notificationCenterToken = "token";
+    private String displayName = "Minecraft Server";
 }

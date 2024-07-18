@@ -17,14 +17,21 @@ public final class MessageBridge extends JavaPlugin implements Listener {
     private void setServerInformation() {
         var serverName = this.getServer().getName();
         var serverVersion = this.getServer().getVersion();
-        var info = new BasePacket.ServerInformation(serverName, serverVersion);
+        var info = new BasePacket.SenderInformation(config.getDisplayName(),serverName, serverVersion);
         BasePacket.setServerInfo(info);
     }
     private void startWebsocket() {
         wsClient = new NotificationWsClient(
                 getLogger(),
                 URI.create(config.getNotificationCenterWsAddress()),
-                config.getNotificationCenterToken());
+                config.getNotificationCenterToken()) {
+            @Override
+            public void onGroupMessage(GroupMessagePacket pkt) {
+                String msg = "[" + pkt.getGroupName() + "] <" + pkt.getSenderName() + ">" + pkt.getMessage();
+                getServer().broadcast(
+                        msg, "nbtca.group");
+            }
+        };
         wsClient.start();
     }
     @Override

@@ -4,10 +4,7 @@ import lombok.Getter;
 import java.util.Optional;
 @Getter
 public enum PacketType {
-    PLAYER_CHAT("PlayerChat"),
-    PLAYER_JOIN("PlayerJoin"),
-    PLAYER_QUIT("PlayerQuit"),
-    PLAYER_DEATH("PlayerDeath");
+    PLAYER_CHAT("player_chat"), PLAYER_JOIN("player_join"), PLAYER_QUIT("player_quit"), PLAYER_DEATH("player_death"), GROUP_MESSAGE("group_chat");
     private final String name;
     PacketType(String name) {
         this.name = name;
@@ -21,17 +18,14 @@ public enum PacketType {
         return Optional.empty();
     }
     public <T extends BasePacket> Class<T> getPacketClass() {
-        switch (this) {
-            case PLAYER_CHAT:
-                return (Class<T>) PlayerChatPacket.class;
-//            case PLAYER_JOIN:
-//                return (Class<T>) PlayerJoinPacket.class;
-//            case PLAYER_QUIT:
-//                return (Class<T>) PlayerQuitPacket.class;
-//            case PLAYER_DEATH:
-//                return (Class<T>) PlayerDeathPacket.class;
-            default:
-                return (Class<T>) BasePacket.class;
-        }
+        var type = switch (this) {
+            case PLAYER_CHAT -> PlayerChatPacket.class;
+            case PLAYER_JOIN -> PlayerJoinPacket.class;
+            case PLAYER_QUIT -> PlayerQuitPacket.class;
+            case PLAYER_DEATH -> PlayerDeathPacket.class;
+            case GROUP_MESSAGE -> GroupMessagePacket.class;
+        };
+        //noinspection unchecked
+        return (Class<T>) type;
     }
 }

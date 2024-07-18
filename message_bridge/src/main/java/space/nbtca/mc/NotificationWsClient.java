@@ -2,11 +2,11 @@ package space.nbtca.mc;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import space.nbtca.mc.Packet.BasePacket;
-import space.nbtca.mc.Packet.PlayerChatPacket;
+import space.nbtca.mc.Packet.GroupMessagePacket;
 
 import java.net.URI;
 import java.util.logging.Logger;
-public class NotificationWsClient extends WebSocketClient {
+public abstract class NotificationWsClient extends WebSocketClient {
     private final Logger logger;
     public NotificationWsClient(Logger logger, URI serverUri, String token) {
         super(serverUri);
@@ -50,16 +50,16 @@ public class NotificationWsClient extends WebSocketClient {
         //发送消息
         send(packet.toJson());
     }
+    public abstract void onGroupMessage(GroupMessagePacket pkt);
     public void processPacket(String message) {
         //处理消息
         BasePacket.fromJson(message).ifPresentOrElse(
                 packet -> {
                     logger.info("Received packet: " + packet);
                     switch (packet.getType()) {
-                        case PLAYER_CHAT:
-                            var playerChatPacket = (PlayerChatPacket) packet;
-                            logger.info("Player " + playerChatPacket.getPlayerName() + " said: " + playerChatPacket.getMessage());
-                            break;
+                        case GROUP_MESSAGE:
+                            var pkt = (GroupMessagePacket) packet;
+                            onGroupMessage(pkt);
                         default:
                             logger.warning("Unknown packet type: " + packet.getType());
                     }
