@@ -17,7 +17,7 @@ public final class MessageBridge extends JavaPlugin implements Listener {
     private void setServerInformation() {
         var serverName = this.getServer().getName();
         var serverVersion = this.getServer().getVersion();
-        var info = new BasePacket.SenderInformation(config.getDisplayName(),serverName, serverVersion);
+        var info = new BasePacket.SenderInformation(config.getDisplayName(), serverName, serverVersion);
         BasePacket.setServerInfo(info);
     }
     private void startWebsocket() {
@@ -28,8 +28,23 @@ public final class MessageBridge extends JavaPlugin implements Listener {
             @Override
             public void onGroupMessage(GroupMessagePacket pkt) {
                 String msg = "[" + pkt.getGroupName() + "] <" + pkt.getSenderName() + ">" + pkt.getMessage();
-                getServer().broadcast(
-                        msg, "nbtca.group");
+                getServer().broadcastMessage(msg);
+            }
+            @Override
+            public GetPlayerListResponsePacket.PlayerInfo[] onGetPlayerList() {
+                var players = getServer().getOnlinePlayers();
+                var playerList = new GetPlayerListResponsePacket.PlayerInfo[players.size()];
+                int i = 0;
+                for (var player : players) {
+                    var pos = player.getLocation();
+                    var world = pos.getWorld();
+                    playerList[i++] = new GetPlayerListResponsePacket.PlayerInfo(player.getName(), player.getUniqueId().toString(),
+                            player.getPing(),
+                            new int[]{pos.getBlockX(), pos.getBlockY(), pos.getBlockZ()},
+                            world == null ? "null" : world.getName()
+                    );
+                }
+                return playerList;
             }
         };
         wsClient.start();

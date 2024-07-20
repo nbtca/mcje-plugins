@@ -2,6 +2,8 @@ package space.nbtca.mc;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import space.nbtca.mc.Packet.BasePacket;
+import space.nbtca.mc.Packet.GetPlayerListRequestPacket;
+import space.nbtca.mc.Packet.GetPlayerListResponsePacket;
 import space.nbtca.mc.Packet.GroupMessagePacket;
 
 import java.net.URI;
@@ -51,21 +53,22 @@ public abstract class NotificationWsClient extends WebSocketClient {
         send(packet.toJson());
     }
     public abstract void onGroupMessage(GroupMessagePacket pkt);
+    public abstract GetPlayerListResponsePacket.PlayerInfo[] onGetPlayerList();
     public void processPacket(String message) {
         //处理消息
-        BasePacket.fromJson(message).ifPresentOrElse(
-                packet -> {
-                    logger.info("Received packet: " + packet);
-                    switch (packet.getType()) {
-                        case GROUP_MESSAGE:
-                            var pkt = (GroupMessagePacket) packet;
-                            onGroupMessage(pkt);
-                        default:
-                            logger.warning("Unknown packet type: " + packet.getType());
-                    }
-                },
-                () -> logger.warning("Failed to parse packet: " + message)
-        );
+        BasePacket.fromJson(message).ifPresentOrElse(packet -> {
+            logger.info("Received packet: " + packet);
+            switch (packet.getType()) {
+                case GROUP_MESSAGE:
+                    onGroupMessage((GroupMessagePacket) packet);
+                    break;
+                case GET_PLAYER_LIST_REQUEST:
+                    sendPacket(new GetPlayerListResponsePacket(((GetPlayerListRequestPacket) packet).getRequestId(), onGetPlayerList()));
+                    break;
+                default:
+                    logger.warning("Unknown packet type: " + packet.getType());
+            }
+        }, () -> logger.warning("Failed to parse packet: " + message));
     }
 }
 

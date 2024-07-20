@@ -4,7 +4,14 @@ import lombok.Getter;
 import java.util.Optional;
 @Getter
 public enum PacketType {
-    PLAYER_CHAT("player_chat"), PLAYER_JOIN("player_join"), PLAYER_QUIT("player_quit"), PLAYER_DEATH("player_death"), GROUP_MESSAGE("group_chat");
+    PLAYER_CHAT("player_chat"),//PlayerChat
+    PLAYER_JOIN("player_join"),//PlayerJoin
+    PLAYER_QUIT("player_quit"),//PlayerQuit
+    PLAYER_DEATH("player_death"),//PlayerDeath
+    GROUP_MESSAGE("group_message"),//GroupMessage
+    GET_PLAYER_LIST_REQUEST("get_player_list_request"),//GetPlayerListRequest
+    GET_PLAYER_LIST_RESPONSE("get_player_list_response"),//GetPlayerListResponse
+    ;
     private final String name;
     PacketType(String name) {
         this.name = name;
@@ -24,6 +31,8 @@ public enum PacketType {
             case PLAYER_QUIT -> PlayerQuitPacket.class;
             case PLAYER_DEATH -> PlayerDeathPacket.class;
             case GROUP_MESSAGE -> GroupMessagePacket.class;
+            case GET_PLAYER_LIST_REQUEST -> GetPlayerListRequestPacket.class;
+            case GET_PLAYER_LIST_RESPONSE -> GetPlayerListResponsePacket.class;
         };
         //noinspection unchecked
         return (Class<T>) type;
