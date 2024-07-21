@@ -1,19 +1,23 @@
 package space.nbtca.mc;
+import org.bukkit.plugin.Plugin;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import space.nbtca.mc.Packet.BasePacket;
-import space.nbtca.mc.Packet.GetPlayerListRequestPacket;
-import space.nbtca.mc.Packet.GetPlayerListResponsePacket;
-import space.nbtca.mc.Packet.GroupMessagePacket;
+import space.nbtca.mc.Packet.*;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.logging.Logger;
 public abstract class NotificationWsClient extends WebSocketClient {
     private final Logger logger;
-    public NotificationWsClient(Logger logger, URI serverUri, String token) {
+    public NotificationWsClient(Plugin plugin, URI serverUri, String token) {
         super(serverUri);
-        this.logger = logger;
+        this.logger = plugin.getLogger();
         this.addHeader("Authorization", "Bearer " + token);
+        this.addHeader("client-type", "minecraft");
+        this.addHeader("client-subtype", "java");
+        this.addHeader("client-version", plugin.getServer().getVersion());
+        this.addHeader("client-name", plugin.getServer().getName());
+        this.addHeader("address", serverUri.toString());
     }
     public void start() {
         this.connect();
@@ -64,6 +68,9 @@ public abstract class NotificationWsClient extends WebSocketClient {
                     break;
                 case GET_PLAYER_LIST_REQUEST:
                     sendPacket(new GetPlayerListResponsePacket(((GetPlayerListRequestPacket) packet).getRequestId(), onGetPlayerList()));
+                    break;
+                case ACTIVE_CLIENTS_CHANGE:
+                    logger.info("Active clients changed: " + Arrays.toString(((ActiveBroadcastPacket) packet).getClients()));
                     break;
                 default:
                     logger.warning("Unknown packet type: " + packet.getType());

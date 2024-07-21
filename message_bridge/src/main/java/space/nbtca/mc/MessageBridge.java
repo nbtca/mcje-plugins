@@ -22,7 +22,7 @@ public final class MessageBridge extends JavaPlugin implements Listener {
     }
     private void startWebsocket() {
         wsClient = new NotificationWsClient(
-                getLogger(),
+                this,
                 URI.create(config.getNotificationCenterWsAddress()),
                 config.getNotificationCenterToken()) {
             @Override

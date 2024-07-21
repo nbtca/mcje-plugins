@@ -11,6 +11,7 @@ public enum PacketType {
     GROUP_MESSAGE("group_message"),//GroupMessage
     GET_PLAYER_LIST_REQUEST("get_player_list_request"),//GetPlayerListRequest
     GET_PLAYER_LIST_RESPONSE("get_player_list_response"),//GetPlayerListResponse
+    ACTIVE_CLIENTS_CHANGE("active_clients_change")//ActiveClientsChange
     ;
     private final String name;
     PacketType(String name) {
@@ -33,6 +34,7 @@ public enum PacketType {
             case GROUP_MESSAGE -> GroupMessagePacket.class;
             case GET_PLAYER_LIST_REQUEST -> GetPlayerListRequestPacket.class;
             case GET_PLAYER_LIST_RESPONSE -> GetPlayerListResponsePacket.class;
+            case ACTIVE_CLIENTS_CHANGE -> ActiveBroadcastPacket.class;
         };
         //noinspection unchecked
         return (Class<T>) type;
