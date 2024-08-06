@@ -4,6 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,6 +64,19 @@ public final class MessageBridge extends JavaPlugin implements Listener {
     }
     @Override
     public void onDisable() {
+    }
+    @EventHandler
+    public void onAchievement(PlayerAdvancementDoneEvent event) {
+        var name = event.getPlayer().getName();
+        var achievement = event.getAdvancement();
+        var display = achievement.getDisplay();
+        var criteria = achievement.getCriteria().toArray(new String[0]);
+        var title = "";
+        if (display != null) {
+            title = display.getTitle();
+        }
+        var packet = new PlayerAchievementPacket(name, title, display.getDescription(), criteria);
+        wsClient.sendPacket(packet);
     }
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {

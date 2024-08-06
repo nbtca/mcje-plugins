@@ -8,6 +8,7 @@ public enum PacketType {
     PLAYER_JOIN("player_join"),//PlayerJoin
     PLAYER_QUIT("player_quit"),//PlayerQuit
     PLAYER_DEATH("player_death"),//PlayerDeath
+    PLAYER_ACHIEVEMENT("player_achievement"),//PlayerAchievement
     GROUP_MESSAGE("group_message"),//GroupMessage
     GET_PLAYER_LIST_REQUEST("get_player_list_request"),//GetPlayerListRequest
     GET_PLAYER_LIST_RESPONSE("get_player_list_response"),//GetPlayerListResponse
@@ -31,6 +32,7 @@ public enum PacketType {
             case PLAYER_JOIN -> PlayerJoinPacket.class;
             case PLAYER_QUIT -> PlayerQuitPacket.class;
             case PLAYER_DEATH -> PlayerDeathPacket.class;
+            case PLAYER_ACHIEVEMENT -> PlayerAchievementPacket.class;
             case GROUP_MESSAGE -> GroupMessagePacket.class;
             case GET_PLAYER_LIST_REQUEST -> GetPlayerListRequestPacket.class;
             case GET_PLAYER_LIST_RESPONSE -> GetPlayerListResponsePacket.class;
