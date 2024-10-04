@@ -55,7 +55,11 @@ public abstract class NotificationWsClient extends WebSocketClient {
     }
     public <T extends BasePacket> void sendPacket(T packet) {
         //发送消息
-        send(packet.toJson());
+        try {
+            send(packet.toJson());
+        } catch (Exception e) {
+            logger.warn("Failed to send packet: {}", e.getMessage());
+        }
     }
     public abstract void onGroupMessage(GroupMessagePacket pkt);
     public abstract GetPlayerListResponsePacket.PlayerInfo[] onGetPlayerList();
