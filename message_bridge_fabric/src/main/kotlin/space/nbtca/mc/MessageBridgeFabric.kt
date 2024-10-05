@@ -7,7 +7,10 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.minecraft.advancement.Advancement
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -17,6 +20,14 @@ import java.net.URI
 import java.nio.file.Paths
 
 class MessageBridgeFabric : ModInitializer {
+    init {
+        instance = this
+    }
+
+    companion object {
+        lateinit var instance: MessageBridgeFabric
+    }
+
     private lateinit var wsClient: NotificationWsClient
     private lateinit var config: UserConfiguration
     private val logger: Logger = LogManager.getLogger("MessageBridge");
@@ -84,6 +95,17 @@ class MessageBridgeFabric : ModInitializer {
         }
     }
 
+    fun onAdvancementAchieved(owner: ServerPlayerEntity, advancement: Advancement, announce: MutableText) {
+        val playerName = owner.name.string
+        val advancementName = advancement.name.orElse(null)?.string ?: ""
+        val packet =
+            PlayerAchievementPacket(playerName, advancementName, announce.string, advancement.criteria.map { it ->
+                it.key.toString()
+            }.toTypedArray())
+        wsClient.sendPacket(packet)
+    }
+
+
     fun startWebsocket(server: MinecraftServer) {
         wsClient = object : NotificationWsClient(
             server,
@@ -111,6 +133,7 @@ class MessageBridgeFabric : ModInitializer {
         }
         wsClient.start()
     }
+
 }
 
 private fun MessageBridgeFabric.getDataFolder(): File {

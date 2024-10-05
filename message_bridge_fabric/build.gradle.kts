@@ -7,6 +7,7 @@ plugins {
     id("maven-publish")
     kotlin("plugin.lombok") version "2.0.20"
     id("io.freefair.lombok") version "8.10"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 version = project.property("mod_version") as String
@@ -50,13 +51,21 @@ dependencies {
     mappings("net.fabricmc:yarn:${project.property("yarn_mappings")}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
-
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-    modImplementation("org.projectlombok:lombok:1.18.34")
-    modImplementation("de.exlll:configlib-yaml:4.5.0")
-    modImplementation("org.java-websocket:Java-WebSocket:1.5.7")
-    modImplementation("com.google.code.gson:gson:2.11.0")
+    include("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    include("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    shadow("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    shadow("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    fun implementationEmbed(s: String) {
+        include(s)
+        implementation(s)
+        shadow(s)
+    }
+    implementationEmbed("org.projectlombok:lombok:1.18.34")
+    implementationEmbed("de.exlll:configlib-yaml:4.5.0")
+    implementationEmbed("org.java-websocket:Java-WebSocket:1.5.7")
+    implementationEmbed("com.google.code.gson:gson:2.11.0")
 }
 
 tasks.processResources {
