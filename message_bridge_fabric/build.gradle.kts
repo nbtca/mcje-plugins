@@ -7,7 +7,7 @@ plugins {
     id("maven-publish")
     kotlin("plugin.lombok") version "2.0.20"
     id("io.freefair.lombok") version "8.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.3"
 }
 
 version = project.property("mod_version") as String
@@ -52,15 +52,22 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-    fun implementationEmbed(s: String) {
+    fun implementationEmbed(s: String, vararg deps: String) {
         include(s)
         implementation(s)
         shadow(s)
+        for (dep in deps) {
+            implementationEmbed(dep)
+        }
     }
     implementationEmbed("org.projectlombok:lombok:1.18.34")
-    implementationEmbed("de.exlll:configlib-yaml:4.5.0")
-    implementationEmbed("org.java-websocket:Java-WebSocket:1.5.7")
-    implementationEmbed("com.google.code.gson:gson:2.11.0")
+    implementationEmbed(
+        "de.exlll:configlib-yaml:4.5.0",
+        "de.exlll:configlib-core:4.5.0",
+        "org.snakeyaml:snakeyaml-engine:2.7"
+    )
+    implementationEmbed("org.java-websocket:Java-WebSocket:1.5.7", "org.slf4j:slf4j-api:2.0.9")
+    implementationEmbed("com.google.code.gson:gson:2.11.0", "com.google.errorprone:error_prone_annotations:2.27.0")
 }
 
 tasks.processResources {
