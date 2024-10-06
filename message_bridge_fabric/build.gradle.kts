@@ -52,11 +52,6 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-
-    include("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
-    include("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
-    shadow("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
-    shadow("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
     fun implementationEmbed(s: String) {
         include(s)
         implementation(s)
