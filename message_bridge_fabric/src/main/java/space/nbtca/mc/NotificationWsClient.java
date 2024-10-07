@@ -1,4 +1,7 @@
 package space.nbtca.mc;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7,7 +10,6 @@ import org.java_websocket.handshake.ServerHandshake;
 import space.nbtca.mc.Packet.*;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,12 +26,25 @@ public abstract class NotificationWsClient extends WebSocketClient {
         this.addHeader("address", serverUri.toString());
     }
     public void start() {
+//        new Thread(() -> {
+//            while (true) {
+//                try {
+//                    Thread.sleep(1000 * 10);
+//                    if (!this.isOpen()) {
+//                        logger.info("Reconnecting...{}", this.getURI());
+//                        this.connectBlocking(5, TimeUnit.SECONDS);
+//                    }
+//                } catch (Exception e) {
+//                    logger.warn("Reconnect failed: {}", e.getMessage());
+//                }
+//            }
+//        }).start();
         this.connect();
         scheduler.scheduleAtFixedRate(() -> {
             if (!this.isOpen()) {
                 try {
                     logger.info("Reconnecting...{}", this.getURI());
-                    this.reconnectBlocking();
+                    this.reconnect();
                 } catch (Exception e) {
                     logger.warn("Reconnect failed: {}", e.getMessage());
                 }
@@ -63,6 +78,10 @@ public abstract class NotificationWsClient extends WebSocketClient {
     }
     public abstract void onGroupMessage(GroupMessagePacket pkt);
     public abstract GetPlayerListResponsePacket.PlayerInfo[] onGetPlayerList();
+    private static final Gson GSON = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .setPrettyPrinting()
+            .create();
     public void processPacket(String message) {
         //处理消息
         BasePacket.fromJson(message).ifPresentOrElse(packet -> {
@@ -75,7 +94,9 @@ public abstract class NotificationWsClient extends WebSocketClient {
                     sendPacket(new GetPlayerListResponsePacket(((GetPlayerListRequestPacket) packet).getRequestId(), onGetPlayerList()));
                     break;
                 case ACTIVE_CLIENTS_CHANGE:
-                    logger.info("Active clients changed: {}", Arrays.toString(((ActiveBroadcastPacket) packet).getClients()));
+                    var items = ((ActiveBroadcastPacket) packet).getClients();
+                    var json = GSON.toJson(items);
+                    logger.info("Active clients changed: {}", json);
                     break;
                 default:
                     logger.warn("Unknown packet type: {}", packet.getType());
