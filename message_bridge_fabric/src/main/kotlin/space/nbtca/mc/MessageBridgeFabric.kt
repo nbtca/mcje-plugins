@@ -7,7 +7,10 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
+import net.fabricmc.fabric.mixin.event.interaction.ServerPlayerEntityMixin
 import net.minecraft.advancement.Advancement
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.MutableText
@@ -78,30 +81,19 @@ class MessageBridgeFabric : ModInitializer {
             wsClient.sendPacket(packet)
         }
         //PlayerAdvancementTracker
-        ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register { world, entity, killedEntity ->
-            {
-                logger.info("Entity Killed")
-            }
-        }
-        ServerLivingEntityEvents.AFTER_DEATH.register { entity, damageSource ->
-            {
-                if (entity.isPlayer) {
-                    val name = entity.name.string
-                    val deathMessage = damageSource.getDeathMessage(entity).string
-                    val packet = PlayerDeathPacket(name, deathMessage)
-                    wsClient.sendPacket(packet)
-                }
-            }
-        }
     }
 
-    fun onAdvancementAchieved(owner: ServerPlayerEntity, advancement: Advancement, announce: MutableText) {
+    fun onPlayerDeath(player: ServerPlayerEntity, damageSource: DamageSource) {
+        val name = player.name.string
+        val deathMessage = damageSource.getDeathMessage(player).string
+        val packet = PlayerDeathPacket(name, deathMessage)
+        wsClient.sendPacket(packet)
+    }
+
+    fun onAdvancementAchieved(owner: ServerPlayerEntity, title: String, description: String, criteria: Array<String>) {
         val playerName = owner.name.string
-        val advancementName = advancement.name.orElse(null)?.string ?: ""
         val packet =
-            PlayerAchievementPacket(playerName, advancementName, announce.string, advancement.criteria.map { it ->
-                it.key.toString()
-            }.toTypedArray())
+            PlayerAchievementPacket(playerName, title, description, criteria)
         wsClient.sendPacket(packet)
     }
 
@@ -115,7 +107,7 @@ class MessageBridgeFabric : ModInitializer {
             override fun onGroupMessage(pkt: GroupMessagePacket) {
                 val msg = "[${pkt.groupName}] <${pkt.senderName}> ${pkt.message}"
                 val text = Text.of(msg)
-                server.sendMessage(text)
+                server.playerManager.broadcast(text, false)
             }
 
             override fun onGetPlayerList(): Array<GetPlayerListResponsePacket.PlayerInfo> {
@@ -133,7 +125,6 @@ class MessageBridgeFabric : ModInitializer {
         }
         wsClient.start()
     }
-
 }
 
 private fun MessageBridgeFabric.getDataFolder(): File {

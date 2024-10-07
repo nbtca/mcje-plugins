@@ -15,16 +15,16 @@ import space.nbtca.mc.MessageBridgeFabric;
 public class PlayerAdvancementTrackerMixin {
     @Shadow
     private ServerPlayerEntity owner;
-    @Shadow
-    private AdvancementManager advancementManager;
     @Inject(method = "grantCriterion", at = @At("TAIL"))
-    void preventGrantCriterion(AdvancementEntry advancement, String criterionName, CallbackInfoReturnable<Boolean> ci) {
+    void grantCriterion(AdvancementEntry advancement, String criterionName, CallbackInfoReturnable<Boolean> ci) {
         var result = ci.getReturnValue();
         if (result) {
             advancement.value().display().ifPresent(display -> {
                 if (display.shouldAnnounceToChat() && this.owner.getWorld().getGameRules().getBoolean(GameRules.ANNOUNCE_ADVANCEMENTS)) {
-                    var announce = display.getFrame().getChatAnnouncementText(advancement, this.owner);
-                    MessageBridgeFabric.instance.onAdvancementAchieved(this.owner, advancement.value(), announce);
+                    var title = display.getTitle();
+                    var description = display.getDescription();
+                    var criteria = advancement.value().criteria().keySet().toArray(new String[0]);
+                    MessageBridgeFabric.instance.onAdvancementAchieved(this.owner, title.getString(), description.getString(), criteria);
                 }
             });
         }
